@@ -21,7 +21,7 @@ def wordle_essai(solution, essai):
 def wordle_game(taille_mot, nb_essais, solution):
     win =  ["vert" for i in range(taille_mot)]
     while nb_essais > 0:
-        essai = input('Faire un essai')
+        essai = input('Faire un essai: ')
         if (len(essai) != taille_mot):
             return 'Erreur'
         state = wordle_essai(solution, essai)
@@ -31,6 +31,4 @@ def wordle_game(taille_mot, nb_essais, solution):
         nb_essais -= 1
     return 'Lost...'
 
-wordle_game(5, 6, 'sourd')
-
-TEST TEST TEST
+print(wordle_game(5, 6, 'sourd'))
