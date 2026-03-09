@@ -1,0 +1,42 @@
+mots_de_longueurs = dict()
+with open("mots.txt") as f:
+    les_mots = f.readlines()
+    for mot in les_mots:
+        mots_de_longueurs[len(mot)] = []
+    for mot in les_mots:
+        mots_de_longueurs[len(mot)].append(mot[:-1])
+
+from pprint import pprint
+pprint(mots_de_longueurs)
+
+exit(0)
+
+# ----------------------------------------------
+mots = open("mots.txt")
+
+def plus_long():
+    mots.seek(0)
+    res = ''
+    for mot in mots:
+        clean_mot = mot.strip()
+        if len(clean_mot)>len(res):
+            res = clean_mot
+    return len(res) + 1  # Faute de 1 sur plus_long 
+ 
+
+def fonc(taille_mot):
+    mots.seek(0)
+    with open(f'mots_{taille_mot}', 'w', encoding="utf-8") as f:
+        acc = 0
+        for mot in mots: 
+            acc += 1
+            clean_mot = mot.strip()
+            if taille_mot == len(clean_mot):
+                f.write(clean_mot + '\n')
+    f.close()
+    
+
+for i in range(plus_long()):
+    fonc(i)
+
+mots.close()

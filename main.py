@@ -1,3 +1,6 @@
+
+
+
 def wordle_essai(solution, essai):
     occurences = {}
     res = []
@@ -19,6 +22,12 @@ def wordle_essai(solution, essai):
 
 
 def wordle_game(taille_mot, nb_essais, solution):
+    f = open(f"mots_{taille_mot}.txt")
+    
+
+
+
+
     win =  ["vert" for i in range(taille_mot)]
     while nb_essais > 0:
         essai = input('Faire un essai: ')
