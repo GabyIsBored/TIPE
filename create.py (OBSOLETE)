@@ -1,17 +1,7 @@
-mots_de_longueurs = dict()
-with open("mots.txt") as f:
-    les_mots = f.readlines()
-    for mot in les_mots:
-        mots_de_longueurs[len(mot)] = []
-    for mot in les_mots:
-        mots_de_longueurs[len(mot)].append(mot[:-1])
 
-from pprint import pprint
-pprint(mots_de_longueurs)
-
-exit(0)
 
 # ----------------------------------------------
+'''
 mots = open("mots.txt")
 
 def plus_long():
@@ -40,3 +30,5 @@ for i in range(plus_long()):
     fonc(i)
 
 mots.close()
+
+'''
