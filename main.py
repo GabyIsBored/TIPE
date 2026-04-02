@@ -43,26 +43,65 @@ def wordle_essai(solution, essai):
 # print(wordle_game(5, 6))
 
 def mots_selon_couleur(essai, code_couleur, mots_valables):
-    # idee 1: Faire la fonction inverse de wordle essai (brute force)
+    # implementation fais trois tableaux pour trois boucles. CT = 3n
     
-    occurences = {}
-    res = []
+    
+    white_occurences = {}
+    iter1 = []
+    iter2 = []
+    iter3 = []
+    ignore_indexes = defaultdict(list)
+    
 
     for l in range(len(essai)):
-        if code_couleur[l] == Couleurs.J:
-            occurences[essai[l]] = occurences.get(essai[l], 0) + 1
-            
+        if code_couleur[l] == Couleurs.B:
+            white_occurences[essai[l]] = white_occurences.get(essai[l], 0) + 1
+
+    # STEP 1 VALIDATE GREENS
+
     for i in range(len(mots_valables)):
         mot = mots_valables[i]
+        
+        
         for j in range(len(code_couleur)):
-            statement = not ((code_couleur[j] == Couleurs.V and not mot[j] == essai[j]) or (code_couleur[j] == Couleurs.J and mot[j] == essai[j]) or (occurences.get(mot[j], 0) == 0))
-            if statement:
-                    res.append(mot)
-                    break
-            else: 
-                occurences[mot[j]] = occurences.get(mot[j], 1) - 1                     
+            #statement = ( code_couleur[j] == Couleurs.V and not mot[j] == essai[j]) or (code_couleur[j] == Couleurs.J and mot[j] == essai[j]) or (occurences.get(mot[j], 0) != 0)
+            if code_couleur[j] == Couleurs.V and (not mot[j] == essai[j]):
+                    
+                    iter1.append(mot)
+                    ignore_indexes[mot].append(j)
+                    break          
+    
+    # STEP 2 VALIDATE YELLOWS
+    
+    
+    
+    for i in range(len(iter1)):
+        mot = mots_valables[i]
 
-    return res
+        for j in range(len(code_couleur)): 
+            if code_couleur[j] == Couleurs.J and (not (mot[j] == essai[j])) and (essai[j] in mot): 
+                iter2.append(mot)
+                ignore_indexes[mot].append(j)
+                break
+    
+    # STEP 3 VALIDATE WHITES
+
+    for i in range(len(iter2)):  # looping through words    
+        # if any letter in the following loop validates the statement, we dont want to add the word to iter3
+        state = True
+        for j in range(len(code_couleur)): # looping through letters   
+             
+            if j not in ignore_indexes[mot] and mot[j] in white_occurences:
+                state = False
+                break
+ 
+        if state:
+            iter3.append(mot)
+
+    print(iter3)    
+
+    
+    return iter3
 
     
 
@@ -74,7 +113,8 @@ def meilleur_essai(mots_valables):
         curr_entropie = 0
         for etat in list(product(Couleurs, repeat=len(mots_valables[0]))):
             p = len(mots_selon_couleur(essai, etat, mots_valables)) / len(mots_valables)
-            curr_entropie += -p * math.log2(p)
+            if p > 0:
+                curr_entropie += -p * math.log2(p)
 
         if curr_entropie > max_entropie:
             mot_max = essai
@@ -97,7 +137,6 @@ def wordle_game(taille_mot, nb_essais):
         
         # Amelioration possible: Table de hachage
         essai = meilleur_essai(mots_valables)
-        print(essai)
         etat = wordle_essai(solution, essai)
 
         mots_valables = mots_selon_couleur(essai,etat,mots_valables)
