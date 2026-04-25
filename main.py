@@ -42,66 +42,28 @@ def wordle_essai(solution, essai):
 # -----------------------------------------------------------------------------------------------------------------------------------------
 # print(wordle_game(5, 6))
 
+def verifier(mot, tent, taille_mot):
+    score = [Couleurs.B] * taille_mot
+    lettres_mot = list(mot)
+    
+    # 1er passage : on fixe les Verts (prioritaires)
+    for i in range(taille_mot):
+        if tent[i] == mot[i]:
+            score[i] = Couleurs.V
+            lettres_mot[i] = None 
+            
+    # 2ème passage : on fixe les Jaunes
+    for i in range(taille_mot):
+        if score[i] == Couleurs.B and tent[i] in lettres_mot:
+            score[i] = Couleurs.J
+            lettres_mot[lettres_mot.index(tent[i])] = None 
+            
+    return tuple(score)
+
 def mots_selon_couleur(essai, code_couleur, mots_valables):
-    # implementation fais trois tableaux pour trois boucles. CT = 3n
-    
-    
-    white_occurences = {}
-    iter1 = []
-    iter2 = []
-    iter3 = []
-    ignore_indexes = defaultdict(list)
-    
-
-    for l in range(len(essai)):
-        if code_couleur[l] == Couleurs.B:
-            white_occurences[essai[l]] = white_occurences.get(essai[l], 0) + 1
-
-    # STEP 1 VALIDATE GREENS
-
-    for i in range(len(mots_valables)):
-        mot = mots_valables[i]
-        
-        
-        for j in range(len(code_couleur)):
-            #statement = ( code_couleur[j] == Couleurs.V and not mot[j] == essai[j]) or (code_couleur[j] == Couleurs.J and mot[j] == essai[j]) or (occurences.get(mot[j], 0) != 0)
-            if code_couleur[j] == Couleurs.V and (not mot[j] == essai[j]):
-                    
-                    iter1.append(mot)
-                    ignore_indexes[mot].append(j)
-                    break          
-    
-    # STEP 2 VALIDATE YELLOWS
-    
-    
-    
-    for i in range(len(iter1)):
-        mot = mots_valables[i]
-
-        for j in range(len(code_couleur)): 
-            if code_couleur[j] == Couleurs.J and (not (mot[j] == essai[j])) and (essai[j] in mot): 
-                iter2.append(mot)
-                ignore_indexes[mot].append(j)
-                break
-    
-    # STEP 3 VALIDATE WHITES
-
-    for i in range(len(iter2)):  # looping through words    
-        # if any letter in the following loop validates the statement, we dont want to add the word to iter3
-        state = True
-        for j in range(len(code_couleur)): # looping through letters   
-             
-            if j not in ignore_indexes[mot] and mot[j] in white_occurences:
-                state = False
-                break
- 
-        if state:
-            iter3.append(mot)
-
-    print(iter3)    
-
-    
-    return iter3
+    taille_mot = len(essai)
+    # implementation fais trois tableaux pour trois boucles. CT = 2 * taile_mot * n    
+    return [mot for mot in mots_valables if verifier(mot, essai, taille_mot) == code_couleur]
 
     
 
@@ -131,7 +93,7 @@ def wordle_game(taille_mot, nb_essais):
     mots_valables = mots_de_longueurs[taille_mot + 1]
 
     solution = random.choice(mots_valables)
-    print(solution)
+    print('La solution est: ', solution)
     etat_gagne =  tuple([Couleurs.V] * taille_mot)
     while nb_essais > 0:
         
@@ -142,11 +104,11 @@ def wordle_game(taille_mot, nb_essais):
         mots_valables = mots_selon_couleur(essai,etat,mots_valables)
 
         if etat == etat_gagne:
-            return 'Gagne!'
+            print('Gagne!')
         nb_essais -= 1
         
         print(essai, etat, mots_valables)
 
-    return f'Perdu... Le mot etait {solution}'
+    print(f'Perdu... Le mot etait {solution}')
 
-print(wordle_game(3, 5))
+wordle_game(4, 6)
