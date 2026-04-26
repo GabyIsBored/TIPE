@@ -68,6 +68,10 @@ def mots_selon_couleur(essai, code_couleur, mots_valables):
     
 
 def meilleur_essai(mots_valables): 
+
+    if len(mots_valables) == 1:
+        return mots_valables[0]
+    
     mot_max = '' 
     max_entropie = 0
 
@@ -92,8 +96,12 @@ def wordle_game(taille_mot, nb_essais):
     mots_de_longueurs = creer_dict()
     mots_valables = mots_de_longueurs[taille_mot + 1]
 
+    print('Initialisation finie...')
+
     solution = random.choice(mots_valables)
+
     print('La solution est: ', solution)
+
     etat_gagne =  tuple([Couleurs.V] * taille_mot)
     while nb_essais > 0:
         
@@ -103,12 +111,14 @@ def wordle_game(taille_mot, nb_essais):
 
         mots_valables = mots_selon_couleur(essai,etat,mots_valables)
 
-        if etat == etat_gagne:
-            print('Gagne!')
-        nb_essais -= 1
-        
         print(essai, etat, mots_valables)
 
-    print(f'Perdu... Le mot etait {solution}')
+        if etat == etat_gagne:
+            return 'Gagne!'
+        nb_essais -= 1
+        
+        
 
-wordle_game(4, 6)
+    return f'Perdu... Le mot etait {solution}'
+
+print(wordle_game(4, 6))
