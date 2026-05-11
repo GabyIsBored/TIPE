@@ -1,94 +1,107 @@
-from pprint import pprint
-import random 
+from itertools import product
+from enum import Enum
+from collections import defaultdict
+import math
+import random
 
-B=0
-J=1
-V=2
+class Couleurs(Enum):
+    B = 0 # Noir/Gris
+    J = 1 # Jaune
+    V = 2 # Vert
 
 def creer_dict():
-    mots_de_longueurs = dict()
-    with open("mots.txt") as f:
-        les_mots = f.readlines()
-        for mot in les_mots:
-            mots_de_longueurs[len(mot)] = []
-        for mot in les_mots:
-            mots_de_longueurs[len(mot)].append(mot[:-1])
+    mots_de_longueurs = defaultdict(list)
+    try:
+        with open("mots.txt", "r", encoding="utf-8") as f:
+            for line in f:
+                mot = line.strip().upper() # On normalise en majuscules
+                if mot:
+                    mots_de_longueurs[len(mot)].append(mot)
+    except FileNotFoundError:
+        print("Erreur : mots.txt introuvable.")
     return mots_de_longueurs
 
-def wordle_essai(solution, essai):
-    occurences = {}
-    res = []
+def verifier(solution, essai):
+    """Calcule le score exact (Vert, Jaune, Gris) avec la priorité aux Verts."""
+    taille = len(solution)
+    res = [Couleurs.B] * taille
+    sol_list = list(solution)
+    ess_list = list(essai)
+
+    # 1ère passe : Les Verts
+    for i in range(taille):
+        if ess_list[i] == sol_list[i]:
+            res[i] = Couleurs.V
+            sol_list[i] = None # On "consomme" la lettre
+            ess_list[i] = None
+
+    # 2ème passe : Les Jaunes
+    for i in range(taille):
+        if ess_list[i] is not None and ess_list[i] in sol_list:
+            res[i] = Couleurs.J
+            sol_list[sol_list.index(ess_list[i])] = None
+            
+    return tuple(res)
+
+
+# VERSION 2 
+def calculer_entropie(essai, mots_valables):
+    """Calcule l'entropie selon la formule H(X) = -sum(p * log2(p))"""
+    distributions = defaultdict(int)
+    for mot in mots_valables:
+        score = verifier(mot, essai)
+        distributions[score] += 1
     
-    for lettre in solution:
-        occurences[lettre] = occurences.get(lettre, 0) + 1
+    entropie = 0
+    total = len(mots_valables)
+    for count in distributions.values():
+        p = count / total
+        entropie -= p * math.log2(p)
+    return entropie
+
+def meilleur_essai(mots_valables, mots_possibles):
+    if len(mots_valables) == 1:
+        return mots_valables[0]
+        
+    best_mot = ""
+    max_h = -1
     
-    for i in range(len(essai)):
-        lettre = essai[i]
-        if occurences.get(lettre, 0) > 0:
-            if solution[i] == lettre:
-                res.append(V)
-            else:
-                 res.append(J)
-            occurences[lettre] -= 1
-        else:
-             res.append(B)
-    return res
+    for essai in mots_possibles:
+        h = calculer_entropie(essai, mots_valables)
+        if h > max_h:
+            max_h = h
+            best_mot = essai
+    return best_mot
 
 def wordle_game(taille_mot, nb_essais):
-    if taille_mot < 2: 
-        return "Parametre invalide: Taille mot trop petite!"
-  
-    mots_de_longueurs = creer_dict()
-    mots_valables = mots_de_longueurs[taille_mot + 1]
-
-    solution = random.choice(mots_valables)
-
-    etat_gagne =  [V] * taille_mot
-    while nb_essais > 0:
-        
-        # Amelioration possible: Table de hachage
-        essai = input('Faire un essai: ').upper()
-        if essai not in mots_valables: 
-            print('Pas un mot valable!')
-            nb_essais += 1
-        # -------------------------------
-
-        etat = wordle_essai(solution, essai)
-        print(etat)
-        if etat == etat_gagne:
-            return 'Gagne!'
-        nb_essais -= 1
-    return f'Perdu... Le mot etait {solution}'
-
-# -----------------------------------------------------------------------------------------------------------------------------------------
-print(wordle_game(5, 6))
-
-def generer_couleurs(): # liste des combinaisons possibles
-    return
-
-def mots_selon_couleur(essai): # liste des mots possibles selon les couleurs donnes par un essai 
-    # Partie redondante si mots_valables passe en argument 
-    taille_mot = len(essai)
-
-    if taille_mot < 2: 
-        return "Parametre invalide: Taille mot trop petite!"
+    dico = creer_dict()
+    mots_possibles = dico[taille_mot]
     
-    mots_de_longueurs = creer_dict()
-    mots_valables = mots_de_longueurs[taille_mot + 1]
-    # -----------------------------------------------------
+    if not mots_possibles:
+        return "Aucun mot de cette taille trouvé."
 
-    mots_possibles = mots_valables
-    couleurs = [B, B, B, B, B]
-    mots_contraintes = []
+    mots_valables = list(mots_possibles)
+    solution = random.choice(mots_valables)
+    
+    print(f"La solution (cachée) est : {solution}")
+    
+    for i in range(nb_essais):
+        essai = meilleur_essai(mots_valables, mots_possibles)
+        score = verifier(solution, essai)
+        
+        print(f"Essai {i+1}: {essai} -> {score}")
+        
+        if essai == solution:
+            return f"Gagné en {i+1} coups !"
+            
+        # Filtrage des mots restants
+        mots_valables = [m for m in mots_valables if verifier(m, essai) == score]
+        print(mots_valables)
+        
+    return f"Perdu... Le mot était {solution}"
 
-    for mot in mots_possibles:
-        couleurs_test = wordle_essai(mot,essai)
-        for i in range(taille_mot):
-            if couleur_lettre[] == couleurs_test[]:
-                
+def main():
+    print(wordle_game(4, 6))
 
-
-    return
-
-def calcul_entropie():  
-    return
+if __name__ == '__main__':
+    main()

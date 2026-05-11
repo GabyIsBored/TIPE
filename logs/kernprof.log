@@ -1,0 +1,142 @@
+La solution (cachée) est : OIL
+Essai 1: AIE -> (<Couleurs.B: 0>, <Couleurs.V: 2>, <Couleurs.B: 0>)
+['BIC', 'BIM', 'BIO', 'BIP', 'BIS', 'BIT', 'CIF', 'CIL', 'CIS', 'DIN', 'DIP', 'DIS', 'DIT', 'DIX', 'FIC', 'FIL', 'FIN', 'FIS', 'FIT', 'FIU', 'FIX', 'GIF', 'GIN', 'GIS', 'GIT', 'HIC', 'HIP', 'HIT', 'KID', 'KIF', 'KIL', 'KIP', 'KIR', 'KIT', 'LIN', 'LIS', 'LIT', 'MIL', 'MIN', 'MIR', 'MIS', 'MIT', 'MIX', 'NIB', 'NID', 'NIF', 'NIM', 'NIT', 'OIL', 'OIS', 'OIT', 'PIC', 'PIF', 'PIN', 'PIS', 'PIU', 'QIN', 'QIS', 'RIB', 'RIF', 'RIO', 'RIS', 'RIT', 'RIZ', 'SIC', 'SIL', 'SIR', 'SIS', 'SIX', 'TIC', 'TIF', 'TIN', 'TIP', 'TIR', 'VIF', 'VIL', 'VIN', 'VIS', 'VIT', 'YIN', 'ZIG', 'ZIP']
+Essai 2: PST -> (<Couleurs.B: 0>, <Couleurs.B: 0>, <Couleurs.B: 0>)
+['BIC', 'BIM', 'BIO', 'CIF', 'CIL', 'DIN', 'DIX', 'FIC', 'FIL', 'FIN', 'FIU', 'FIX', 'GIF', 'GIN', 'HIC', 'KID', 'KIF', 'KIL', 'KIR', 'LIN', 'MIL', 'MIN', 'MIR', 'MIX', 'NIB', 'NID', 'NIF', 'NIM', 'OIL', 'QIN', 'RIB', 'RIF', 'RIO', 'RIZ', 'VIF', 'VIL', 'VIN', 'YIN', 'ZIG']
+Essai 3: FON -> (<Couleurs.B: 0>, <Couleurs.J: 1>, <Couleurs.B: 0>)
+['BIO', 'OIL', 'RIO']
+Essai 4: BAL -> (<Couleurs.B: 0>, <Couleurs.B: 0>, <Couleurs.V: 2>)
+['OIL']
+Essai 5: OIL -> (<Couleurs.V: 2>, <Couleurs.V: 2>, <Couleurs.V: 2>)
+Gagné en 5 coups !
+Wrote profile results to 'main.py.lprof'
+Timer unit: 1e-06 s
+
+Total time: 0.651361 s
+File: main.py
+Function: creer_dict at line 12
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    12                                           def creer_dict():
+    13         1          3.0      3.0      0.0      mots_de_longueurs = defaultdict(list)
+    14         1          0.7      0.7      0.0      try:
+    15         2         59.9     30.0      0.0          with open("mots.txt", "r", encoding="utf-8") as f:
+    16    411431     174165.3      0.4     26.7              for line in f:
+    17    411430     187039.9      0.5     28.7                  mot = line.strip().upper() # On normalise en majuscules
+    18    411430     129161.4      0.3     19.8                  if mot:
+    19    411430     160929.7      0.4     24.7                      mots_de_longueurs[len(mot)].append(mot)
+    20                                               except FileNotFoundError:
+    21                                                   print("Erreur : mots.txt introuvable.")
+    22         1          1.0      1.0      0.0      return mots_de_longueurs
+
+Total time: 3.77285 s
+File: main.py
+Function: verifier at line 24
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    24                                           def verifier(solution, essai):
+    25                                               """Calcule le score exact (Vert, Jaune, Gris) avec la priorité aux Verts."""
+    26    479943     185449.8      0.4      4.9      taille = len(solution)
+    27    479943     234848.7      0.5      6.2      res = [Couleurs.B] * taille
+    28    479943     225398.0      0.5      6.0      sol_list = list(solution)
+    29    479943     196106.9      0.4      5.2      ess_list = list(essai)
+    30                                           
+    31                                               # 1ère passe : Les Verts
+    32   1919772     662134.9      0.3     17.5      for i in range(taille):
+    33   1439829     461044.9      0.3     12.2          if ess_list[i] == sol_list[i]:
+    34    118973      41841.7      0.4      1.1              res[i] = Couleurs.V
+    35    118973      38158.0      0.3      1.0              sol_list[i] = None # On "consomme" la lettre
+    36    118973      37515.2      0.3      1.0              ess_list[i] = None
+    37                                           
+    38                                               # 2ème passe : Les Jaunes
+    39   1919772     639419.7      0.3     16.9      for i in range(taille):
+    40   1439829     579355.4      0.4     15.4          if ess_list[i] is not None and ess_list[i] in sol_list:
+    41    121593      48097.8      0.4      1.3              res[i] = Couleurs.J
+    42    121593      51594.9      0.4      1.4              sol_list[sol_list.index(ess_list[i])] = None
+    43                                                       
+    44    479943     371886.0      0.8      9.9      return tuple(res)
+
+Total time: 9.06277 s
+File: main.py
+Function: calculer_entropie at line 48
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    48                                           def calculer_entropie(essai, mots_valables):
+    49                                               """Calcule l'entropie selon la formule H(X) = -sum(p * log2(p))"""
+    50      2532       1926.7      0.8      0.0      distributions = defaultdict(int)
+    51    481713     180137.2      0.4      2.0      for mot in mots_valables:
+    52    479181    6316670.7     13.2     69.7          score = verifier(mot, essai)
+    53    479181    2540732.8      5.3     28.0          distributions[score] += 1
+    54                                               
+    55      2532        715.1      0.3      0.0      entropie = 0
+    56      2532        887.5      0.4      0.0      total = len(mots_valables)
+    57     19804       6587.6      0.3      0.1      for count in distributions.values():
+    58     17272       5414.7      0.3      0.1          p = count / total
+    59     17272       8221.3      0.5      0.1          entropie -= p * math.log2(p)
+    60      2532       1479.5      0.6      0.0      return entropie
+
+Total time: 9.18666 s
+File: main.py
+Function: meilleur_essai at line 62
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    62                                           def meilleur_essai(mots_valables, mots_possibles):
+    63         5          2.7      0.5      0.0      if len(mots_valables) == 1:
+    64         1          0.6      0.6      0.0          return mots_valables[0]
+    65                                                   
+    66         4          1.3      0.3      0.0      best_mot = ""
+    67         4          1.1      0.3      0.0      max_h = -1
+    68                                               
+    69      2536       1040.2      0.4      0.0      for essai in mots_possibles:
+    70      2532    9184859.3   3627.5    100.0          h = calculer_entropie(essai, mots_valables)
+    71      2532        739.4      0.3      0.0          if h > max_h:
+    72        26          8.1      0.3      0.0              max_h = h
+    73        26          8.5      0.3      0.0              best_mot = essai
+    74         4          2.8      0.7      0.0      return best_mot
+
+Total time: 9.97859 s
+File: main.py
+Function: wordle_game at line 76
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    76                                           def wordle_game(taille_mot, nb_essais):
+    77         1     782539.4 782539.4      7.8      dico = creer_dict()
+    78         1          0.6      0.6      0.0      mots_possibles = dico[taille_mot]
+    79                                               
+    80         1          0.7      0.7      0.0      if not mots_possibles:
+    81                                                   return "Aucun mot de cette taille trouvé."
+    82                                           
+    83         1         12.3     12.3      0.0      mots_valables = list(mots_possibles)
+    84         1         21.1     21.1      0.0      solution = random.choice(mots_valables)
+    85                                               
+    86         1          8.4      8.4      0.0      print(f"La solution (cachée) est : {solution}")
+    87                                               
+    88         5          3.6      0.7      0.0      for i in range(nb_essais):
+    89         5    9187342.9 1.84e+06     92.1          essai = meilleur_essai(mots_valables, mots_possibles)
+    90         5         62.4     12.5      0.0          score = verifier(solution, essai)
+    91                                                   
+    92         5        101.3     20.3      0.0          print(f"Essai {i+1}: {essai} -> {score}")
+    93                                                   
+    94         5          3.3      0.7      0.0          if essai == solution:
+    95         1          2.1      2.1      0.0              return f"Gagné en {i+1} coups !"
+    96                                                       
+    97                                                   # Filtrage des mots restants
+    98         4       8469.9   2117.5      0.1          mots_valables = [m for m in mots_valables if verifier(m, essai) == score]
+    99         4         22.3      5.6      0.0          print(mots_valables)
+   100                                                   
+   101                                               return f"Perdu... Le mot était {solution}"
+
+Total time: 9.9885 s
+File: main.py
+Function: main at line 103
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   103                                           def main():
+   104         1    9988498.4 9.99e+06    100.0      print(wordle_game(3, 6))
+
