@@ -43,9 +43,7 @@ def verifier(solution, essai):
             
     return tuple(res)
 
-
-# VERSION 2 
-def calculer_entropie(essai, mots_valables):
+def max_entropie(essai, mots_valables):
     """Calcule l'entropie selon la formule H(X) = -sum(p * log2(p))"""
     distributions = defaultdict(int)
     for mot in mots_valables:
@@ -59,7 +57,24 @@ def calculer_entropie(essai, mots_valables):
         entropie -= p * math.log2(p)
     return entropie
 
-def meilleur_essai(mots_valables, mots_possibles):
+def max_size(essai, mots_valables):
+    """Calcule le pire cas, cad le max de mots possibles restants"""
+    distributions = defaultdict(int)
+    for mot in mots_valables:
+        score = verifier(mot, essai)
+        distributions[score] += 1
+    return 1/max(distributions.values())
+
+def max_splits(essai, mots_valables):
+    """Calcule le pire cas, cad le max de mots possibles restants"""
+    distributions = {}
+    for mot in mots_valables:
+        score = verifier(mot, essai)
+        distributions[score] = 0
+    return len(distributions)
+
+
+def meilleur_essai(mots_valables, mots_possibles, algo):
     if len(mots_valables) == 1:
         return mots_valables[0]
         
@@ -67,26 +82,27 @@ def meilleur_essai(mots_valables, mots_possibles):
     max_h = -1
     
     for essai in mots_possibles:
-        h = calculer_entropie(essai, mots_valables)
+        h = algo(essai, mots_valables)
         if h > max_h:
             max_h = h
             best_mot = essai
     return best_mot
 
-def wordle_game(taille_mot, nb_essais):
+def wordle_game(taille_mot, nb_essais, algo = max_entropie):
     dico = creer_dict()
     mots_possibles = dico[taille_mot]
-    
+
     if not mots_possibles:
         return "Aucun mot de cette taille trouvé."
 
-    mots_valables = list(mots_possibles)
+    mots_valables = mots_possibles
     solution = random.choice(mots_valables)
     
     print(f"La solution (cachée) est : {solution}")
     
     for i in range(nb_essais):
-        essai = meilleur_essai(mots_valables, mots_possibles)
+
+        essai = meilleur_essai(mots_valables, mots_possibles, algo)
         score = verifier(solution, essai)
         
         print(f"Essai {i+1}: {essai} -> {score}")
@@ -101,7 +117,8 @@ def wordle_game(taille_mot, nb_essais):
     return f"Perdu... Le mot était {solution}"
 
 def main():
-    print(wordle_game(4, 6))
+    print(wordle_game(4, 6, max_splits))
+
 
 if __name__ == '__main__':
     main()
